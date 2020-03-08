@@ -1,0 +1,4 @@
+;; -*- scheme -*-
+
+((author "Kristian Lein-Mathisen")
+ (components (program deltar)))
