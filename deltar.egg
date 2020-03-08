@@ -1,4 +1,10 @@
 ;; -*- scheme -*-
 
 ((author "Kristian Lein-Mathisen")
- (components (program deltar)))
+ (dependencies fmt matchable srfi-69)
+ (components (extension libcrypto.sha1
+                        (link-options "-L" "-lcrypto"))
+             (program deltar
+                      (component-dependencies libcrypto.sha1)
+                      (linkage static)
+                      (link-options "-L" "-lcrypto"))))
