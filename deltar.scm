@@ -189,7 +189,7 @@
          (apply callback item))
        read))))
 
-(define (tree snapshot #!optional (depth 0))
+(define (tree snapshot)
   (traverse snapshot
             (match-lambda*
              (('f path hash) (print (blob->hex hash) " " path))
