@@ -186,7 +186,11 @@
     (lambda ()
       (port-for-each
        (lambda (item)
-         (apply callback item))
+         (apply callback item)
+         ;; directories are recursive
+         (match item
+           (('d path hash) (traverse hash callback))
+           (else)))
        read))))
 
 (define (tree snapshot)
