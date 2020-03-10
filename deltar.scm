@@ -120,7 +120,7 @@
         (let ((hash (path->sha1sum pathO)))
           (receive (dir file extension) (decompose-pathname pathI)
             (create-directory dir #t))
-          (with-output-to-file pathI (lambda () (write hash)))
+          (with-output-to-file pathI (lambda () (write hash) (newline)))
           hash))))
 
 ;; recurse into directory path and start getting hashes of things
