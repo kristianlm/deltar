@@ -6,8 +6,8 @@
         (only chicken.port make-output-port port-for-each with-input-from-string)
         (only chicken.random pseudo-random-integer)
         (only chicken.blob blob->string blob?)
-        (only chicken.pathname decompose-pathname make-pathname normalize-pathname)
-        (only chicken.process-context command-line-arguments argv)
+        (only chicken.pathname decompose-pathname make-pathname absolute-pathname? normalize-pathname)
+        (only chicken.process-context command-line-arguments argv get-environment-variable current-directory)
         (only chicken.process with-input-from-pipe)
         (only chicken.io read-string read-string!)
         (only chicken.sort sort)
@@ -68,18 +68,17 @@
         (begin ;;map (lambda (p) (make-pathname (list dir p) #f))
           (append (sort files string<?) (sort dirs string<?))))))
 
-(define .deltar ".deltar")
-(define .deltar/tmp   (make-pathname .deltar "tmp"))
-(define .deltar/blobs (make-pathname .deltar "blobs"))
-(define .deltar/sha1  (make-pathname .deltar "sha1"))
+(define .deltar/ (make-pathname (list (or (get-environment-variable "HOME") "./") ".deltar/") #f))
+(define .deltar/tmp   (make-pathname (list .deltar/ "tmp") #f))
+(define .deltar/blobs (make-pathname (list .deltar/ "blobs") #f))
+(define .deltar/sha1  (make-pathname (list .deltar/ "sha1") #f))
 (create-directory .deltar/tmp   #t)
 (create-directory .deltar/blobs #t)
 (create-directory .deltar/sha1  #t)
 
 (define (temporary-pathname)
-  (create-directory (make-pathname (list .deltar "tmp") #f) #t)
-  (make-pathname (list .deltar "tmp")
-                 (conc (pseudo-random-integer #xffffffff))))
+  (create-directory .deltar/tmp #t)
+  (make-pathname .deltar/tmp (number->string (pseudo-random-integer #xffffffff) 16)))
 
 ;; path of cache file which hopefully will already contain the correct
 ;; hash-sum.
@@ -167,18 +166,21 @@
                              "seen " (seen+) "/" (+ (dirs+) (files+) (links+)) " "
                              (if (zero? (seenbytes+)) "0B" (fmt #f (num/si (seenbytes+) 1024 "B"))) " / "
                              (if (zero? (totabytes+)) "0B" (fmt #f (num/si (totabytes+) 1024 "B"))) " "))))
-  (condition-case
-   (if (file-readable? path)
-       (let* ((T (type path))
-              (result (case T
-                        ((d) (dirs+ 1)  (hash-dir path callback))
-                        ((f) (files+ 1) (totabytes+ (file-size path)) (hashcache! path))
-                        ((l) (links+ 1) (read-symbolic-link path))
-                        (else (print "warning: skipping " (file-type path) " " path)))))
-         (callback T path result)
-         result)
-       (print "warning: no permissions on " (file-type path) " " path))
-   (e (i/o) (print (condition->list e)) (print-error-message e))))
+  (let ((path (normalize-pathname ;; <-- important! (sha1sum "/home/user") ≠ (sha1sum "/home/./user")
+               (if (absolute-pathname? path) path
+                   (make-pathname (list (current-directory) path) #f)))))
+   (condition-case
+    (if (file-readable? path)
+        (let* ((T (type path))
+               (result (case T
+                         ((d) (dirs+ 1)  (hash-dir path callback))
+                         ((f) (files+ 1) (totabytes+ (file-size path)) (hashcache! path))
+                         ((l) (links+ 1) (read-symbolic-link path))
+                         (else (print "warning: skipping " (file-type path) " " path)))))
+          (callback T path result)
+          result)
+        (print "warning: no permissions on " (file-type path) " " path))
+    (e (i/o) (print (condition->list e)) (print-error-message e)))))
 
 ;; traverse snapshot recursively with callbacks
 (define (traverse snapshot callback)
@@ -241,6 +243,7 @@ where cmd ... is:
      (delta snapshot))
     (else (print "unknown command " args))))
 
+(print "using repo " .deltar/)
 (main (command-line-arguments))
 
 ;; - [x] fix cached results ≠ noncached results!
