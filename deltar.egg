@@ -6,5 +6,7 @@
                         (link-options "-L" "-lcrypto"))
              (program deltar
                       (component-dependencies libcrypto.sha1)
+                      (source "deltar-module.scm")
+                      (source-dependencies "deltar.scm")
                       (linkage static)
                       (link-options "-L" "-lcrypto"))))
