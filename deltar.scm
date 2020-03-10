@@ -224,7 +224,7 @@
 where cmd ... is:
 
   snapshot [directory]
-    Snapshot files and directories recurively
+    Snapshot files and directories recursively
     to produce a snapshot hash.
 
   tree <snapshot>
