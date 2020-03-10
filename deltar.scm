@@ -230,7 +230,14 @@ where cmd ... is:
   tree <snapshot>
     Print the list of files for <snapshot>.
 
-"))
+version " (let-syntax ;; compile in version string
+      ((git-tag
+        (er-macro-transformer
+         (lambda (x r t)
+           (import (only chicken.process with-input-from-pipe)
+                   (only chicken.io read-line))
+           (with-input-from-pipe "git describe --tags --always --dirty" read-line)))))
+    (git-tag))))
 
   (match args
     (() (usage))
