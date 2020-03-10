@@ -217,6 +217,8 @@
                     (else (print "TODO: " type))))))))
 
 (define (main args)
+  (define (header)
+    (print "using repo " .deltar/))
   (define (usage)
     (print "usage: deltar [cmd ...]
 where cmd ... is:
@@ -234,16 +236,18 @@ where cmd ... is:
     (() (usage))
     (("snapshot") (main `("snapshot" ".")))
     (("snapshot" dir)
+     (header)
      (let ((h (snapshot dir)))
        (newline)
        (print h)))
     (("tree" snapshot)
+     (header)
      (tree snapshot))
     (("delta" snapshot)
+     (header)
      (delta snapshot))
     (else (print "unknown command " args))))
 
-(print "using repo " .deltar/)
 (main (command-line-arguments))
 
 ;; - [x] fix cached results ≠ noncached results!
