@@ -142,7 +142,7 @@
     ;; print directory contents into tmp, recursively
     (for-each
      (lambda (path) ;; <-- could be file or directory
-       (let* ((h (scan path callback)))
+       (let* ((h (snapshot path callback)))
          ;; this output is written to parent dir's content list
          (write (list (type path) path h) tmp)
          (newline tmp)))
@@ -160,13 +160,13 @@
 ;; return the atomic representation of file/directory on path. this is
 ;; the hash-value of the contents for files and directories, and the
 ;; target for symbolic-links.
-(define (scan path #!optional
-              (callback
-               (lambda (type path hash)
-                 (print* "\r" (dirs+) " dirs " (files+) " files, "
-                         "seen " (seen+) "/" (+ (dirs+) (files+) (links+)) " "
-                         (if (zero? (seenbytes+)) "0B" (fmt #f (num/si (seenbytes+) 1024 "B"))) " / "
-                         (if (zero? (totabytes+)) "0B" (fmt #f (num/si (totabytes+) 1024 "B"))) " "))))
+(define (snapshot path #!optional
+                  (callback
+                   (lambda (type path hash)
+                     (print* "\r" (dirs+) " dirs " (files+) " files, "
+                             "seen " (seen+) "/" (+ (dirs+) (files+) (links+)) " "
+                             (if (zero? (seenbytes+)) "0B" (fmt #f (num/si (seenbytes+) 1024 "B"))) " / "
+                             (if (zero? (totabytes+)) "0B" (fmt #f (num/si (totabytes+) 1024 "B"))) " "))))
   (condition-case
    (if (file-readable? path)
        (let* ((T (type path))
@@ -205,22 +205,22 @@
     (print* "analysing snapshot ...") (flush-output)
     (traverse snapshot (lambda (type path hash) (hash-table-set! ht hash #t)))
     (print "done")
-    (scan "."
-          (lambda (type path hash)
-            (let ((present? (hash-table-ref ht hash (lambda () #f))))
-              (match type
-                ('l (print "TODO: symlinks"))
-                ('f (unless present? (print "mv " (blob->path hash) " " path)))
-                ('d (unless present? (print "echo d " hash  " " path)))
-                (else (print "TODO: " type))))))))
+    (snapshot "."
+              (lambda (type path hash)
+                (let ((present? (hash-table-ref ht hash (lambda () #f))))
+                  (match type
+                    ('l (print "TODO: symlinks"))
+                    ('f (unless present? (print "mv " (blob->path hash) " " path)))
+                    ('d (unless present? (print "echo d " hash  " " path)))
+                    (else (print "TODO: " type))))))))
 
 (define (main args)
   (define (usage)
     (print "usage: deltar [cmd ...]
 where cmd ... is:
 
-  scan [directory]
-    Scan files and directories recurively
+  snapshot [directory]
+    Snapshot files and directories recurively
     to produce a snapshot hash.
 
   tree <snapshot>
@@ -230,9 +230,9 @@ where cmd ... is:
 
   (match args
     (() (usage))
-    (("scan") (main `("scan" ".")))
-    (("scan" dir)
-     (let ((h (scan dir)))
+    (("snapshot") (main `("snapshot" ".")))
+    (("snapshot" dir)
+     (let ((h (snapshot dir)))
        (newline)
        (print h)))
     (("tree" snapshot)
