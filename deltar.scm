@@ -1,6 +1,6 @@
 ;;; one way incremental files sync
 (import (only chicken.string conc reverse-list->string)
-        (only chicken.condition print-error-message condition->list)
+        (only chicken.condition print-error-message condition->list condition-case)
         (only chicken.file file-exists? create-directory directory delete-file move-file file-readable?)
         (only chicken.file.posix directory? file-type file-modification-time file-size read-symbolic-link)
         (only chicken.port make-output-port port-for-each with-input-from-string)
