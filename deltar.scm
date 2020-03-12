@@ -262,3 +262,4 @@ version " (let-syntax ;; compile in version string
 ;; - [ ] colorize output using LS_COLORS
 ;; - [ ] persist snapshots
 ;; - [ ] list snapshots
+;; - [ ] aggregate directory sizes so that (du snapshot) is O(1) [stats in separate file?]
