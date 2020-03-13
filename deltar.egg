@@ -4,6 +4,7 @@
  (dependencies fmt matchable srfi-69)
  (components (extension libcrypto.sha1
                         (link-options "-L" "-lcrypto"))
+             (extension fastfiles)
              (program deltar
                       (component-dependencies libcrypto.sha1)
                       (source "deltar-module.scm")
