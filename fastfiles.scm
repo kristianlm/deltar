@@ -58,7 +58,7 @@
     buf))
 
 ;; OBS: skips all dotfiles
-(define (directory-for-each path0 proc)
+(define (directory-for-each path0 proc/type+path)
 
   (define (directory-for-each* path proc*)
     (let ((dir (opendir path)))
@@ -83,7 +83,8 @@
                            (let ((apath (if (eq? type 'd)
                                             (make-pathname (list path rpath) #f)
                                             (make-pathname path rpath))))
-                             (if (and (proc type apath) (eq? type 'd))
+                             (if (and (proc/type+path type apath)
+                                      (eq? type 'd))
                                  (loop apath)))))))
 
 )
