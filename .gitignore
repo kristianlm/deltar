@@ -1,0 +1,14 @@
+/libcrypto.sha1.import.scm
+/libcrypto.sha1.import.so
+/libcrypto.sha1.link
+/libcrypto.sha1.so
+/libcrypto.sha1.static.o
+/fastfiles.static.o
+/fastfiles.so
+/fastfiles.link
+/fastfiles.import.so
+/fastfiles.import.scm
+/deltar.link
+/deltar.install.sh
+/deltar.build.sh
+/deltar
