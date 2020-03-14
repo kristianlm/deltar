@@ -9,6 +9,8 @@
 ;;;    918k 0:00:01 [ 591k/s]
 ;;;    $ find | pv -l > /dev/null
 ;;;    932k 0:00:01 [ 579k/s]
+;;;
+;;; TODO: don't error out on "Permission denied"
 (module fastfiles (directory-for-each)
 
 (import scheme chicken.base
