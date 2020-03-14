@@ -79,7 +79,9 @@
 
   (let loop ((path path0))
     (directory-for-each* (lambda (type rpath)
-                           (let ((apath (make-pathname (list path rpath) #f)))
+                           (let ((apath (if (eq? type 'd)
+                                            (make-pathname (list path rpath) #f)
+                                            (make-pathname path rpath))))
                              (if (and (proc type apath) (eq? type 'd))
                                  (loop apath))))
                          path)))
