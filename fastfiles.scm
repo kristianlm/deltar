@@ -11,7 +11,7 @@
 ;;;    932k 0:00:01 [ 579k/s]
 ;;;
 ;;; TODO: don't error out on "Permission denied"
-(module fastfiles (directory-for-each)
+(module fastfiles (directory-for-each directory-for-each*)
 
 (import scheme chicken.base
         chicken.foreign
@@ -57,26 +57,26 @@
      dir buf len)
     buf))
 
+;; a non-recursive version of directory-for-each
+(define (directory-for-each* path proc*)
+  (let ((dir (opendir path)))
+    (if dir
+        (dynamic-wind
+            (lambda () #f)
+            (lambda ()
+              (let loop ()
+                (let ((dirent (readdir dir)))
+                  (unless (eq? #f dirent)
+                    (let ((name (dirent-name dirent))
+                          (type (dirent-type dirent)))
+                      (unless (eq? #\. (string-ref name 0))
+                        (proc* type name)))
+                    (loop)))))
+            (lambda () (closedir dir)))
+        (error "error reading directory " path dir))))
+
 ;; OBS: skips all dotfiles
 (define (directory-for-each path0 proc/type+path)
-
-  (define (directory-for-each* path proc*)
-    (let ((dir (opendir path)))
-      (if dir
-          (dynamic-wind
-              (lambda () #f)
-              (lambda ()
-                (let loop ()
-                  (let ((dirent (readdir dir)))
-                    (unless (eq? #f dirent)
-                      (let ((name (dirent-name dirent))
-                            (type (dirent-type dirent)))
-                        (unless (eq? #\. (string-ref name 0))
-                          (proc* type name)))
-                      (loop)))))
-              (lambda () (closedir dir)))
-          (error "error reading directory " path dir))))
-
   (let loop ((path path0))
     (directory-for-each* path
                          (lambda (type rpath)
