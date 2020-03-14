@@ -56,30 +56,30 @@
     buf))
 
 ;; OBS: skips all dotfiles
-(define (directory-for-each proc path)
-  (let ((dir (opendir path)))
-    (if dir
-        (dynamic-wind
-            (lambda () #f)
-            (lambda ()
-              (let loop ()
-                (let ((dirent (readdir dir)))
-                  (unless (eq? #f dirent)
-                    (let ((name (dirent-name dirent))
-                          (type (dirent-type dirent)))
-                      (unless (eq? #\. (string-ref name 0))
-                        (proc name type)))
-                    (loop)))))
-            (lambda () (closedir dir)))
-        (error "error reading directory " path dir))))
+(define (directory-for-each proc path0)
 
+  (define (directory-for-each* proc* path)
+    (let ((dir (opendir path)))
+      (if dir
+          (dynamic-wind
+              (lambda () #f)
+              (lambda ()
+                (let loop ()
+                  (let ((dirent (readdir dir)))
+                    (unless (eq? #f dirent)
+                      (let ((name (dirent-name dirent))
+                            (type (dirent-type dirent)))
+                        (unless (eq? #\. (string-ref name 0))
+                          (proc* type name)))
+                      (loop)))))
+              (lambda () (closedir dir)))
+          (error "error reading directory " path dir))))
 
-(define (dirs-print path0)
-  (directory-for-each
-   (lambda (path type)
-     (print type " " path)
-     (if (eq? type 'd)
-         (dirs-print (make-pathname (list path0 path) #f))))
-   path0))
+  (let loop ((path path0))
+    (directory-for-each* (lambda (type rpath)
+                           (let ((apath (make-pathname (list path rpath) #f)))
+                             (if (and (proc type apath) (eq? type 'd))
+                                 (loop apath))))
+                         path)))
 
 )
